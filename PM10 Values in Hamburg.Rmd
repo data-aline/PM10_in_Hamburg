@@ -1,0 +1,65 @@
+---
+title: 'PM10 values in Hamburg'
+author: "Aline Gefeller"
+date: "18 September 2017"
+output: ioslides_presentation
+---
+
+```{r setup, include=FALSE}
+#see the html presentation::
+#https://rawgit.com/data-aline/Peer-graded-Assignment--R-Markdown-and-Leaflet/master/Peer-graded_Assignment.html#1
+
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+
+```{r results='hide', message=FALSE, warning=FALSE}
+
+library(tidyr)
+library(reshape2)
+library(dplyr)
+library(lubridate)
+library(leaflet)
+library(plotly)
+```
+
+
+```{r results='hide', message=FALSE, warning=FALSE}
+
+# Load data & tidy up
+
+set.seed(2017-09-18)
+
+pm10<-read.csv("halm_PM10.csv",header=TRUE,sep=",")
+pm10_hh<-pm10[c(4:215),]
+
+names(pm10_hh)[names(pm10_hh)=="ï..Station"]<-"Date"
+
+pm10_hh$Date<-as.character(pm10_hh$Date)
+pm10_hh$Date<-sub('\\.', '-',pm10_hh$Date)
+pm10_hh$Date<-dmy(paste("01-",pm10_hh$Date,sep=""))
+
+pm10_melt<-melt(pm10_hh,id="Date",measure.vars =c("Altona.Elbhang","Billbrook","Finkenwerder.West", "Flughafen" ,"Hafen.Kl..Grasbrook","Sternschanze", "Veddel","Wilhelmsburg" ))
+
+pm10_melt$value<-as.numeric(pm10_melt$value)
+good<-complete.cases(pm10_melt)
+pm10_melt<-pm10_melt[good,]
+#names(pm10_melt)[names(pm10_melt)=="value"]<-"PM10_(µg/m³)"
+ 
+
+
+```
+
+
+
+
+## PM10 values 2000-2017
+### - measured at the weather stations in Hamburg -
+
+```{r, message=FALSE, warning=FALSE }
+#plot_ly(pm10_melt,x=~Date,y=~PM10_(µg/m³),color=~variable,type = "scatter", mode="lines")
+plot_ly(pm10_melt,x=~Date,y=~pm10_melt$value,color=~variable,type = "scatter", mode="lines")%>%layout(yaxis=list(title="PM10 (µg/m³)"))
+```
+September 18, 2017
+
+
